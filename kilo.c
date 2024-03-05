@@ -71,7 +71,7 @@ int getCursorPosition(int *rows, int *cols) {
     return -1;
 
   while (i < sizeof(buf) - 1) {
-    if (read(STDOUT_FILENO, &buf[i], 1) != 1)
+    if (read(STDIN_FILENO, &buf[i], 1) != 1)
       break;
     if (buf[i] == 'R')
       break;
@@ -105,6 +105,9 @@ struct abuf {
   int len;
 };
 
+#define ABUF_INIT                                                              \
+  { NULL, 0 }
+
 void abAppend(struct abuf *ab, const char *s, int len) {
   char *new = realloc(ab->b, ab->len + len);
   if (new == NULL)
@@ -116,9 +119,6 @@ void abAppend(struct abuf *ab, const char *s, int len) {
 }
 
 void abFree(struct abuf *ab) { free(ab->b); }
-
-#define ABUF_INIT                                                              \
-  { NULL, 0 }
 
 /*** output ***/
 void editorDrawRows(struct abuf *ab) {
@@ -160,7 +160,7 @@ void editorRefreshScreen() {
   snprintf(buf, sizeof(buf), "\x1b[%d;%dH", E.cy + 1, E.cx + 1);
   abAppend(&ab, buf, strlen(buf));
 
-  abAppend(&ab, "\x1b[?25H", 6);
+  abAppend(&ab, "\x1b[?25h", 6);
 
   write(STDOUT_FILENO, ab.b, ab.len);
   abFree(&ab);
